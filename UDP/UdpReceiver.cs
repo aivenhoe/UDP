@@ -11,7 +11,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using UnityEngine;
-public enum UDPReceiveMode { Discard, Queue };
+public enum UdpReceiveMode { Discard, Queue };
 
 /// <summary>
 /// General purpose UDP receiver class. see also: <see cref="UdpSender"/>
@@ -20,16 +20,21 @@ public class UdpReceiver
 {
     public int Port { get; private set; }
 
-    public UDPReceiveMode Mode {get; private set;}
+    public UdpReceiveMode Mode {get; private set;}
     public bool ReceiveThreadIsRunning { get; private set; }
 
     public delegate void ReceivedData(byte[] data);
     public event ReceivedData ReceivedNewData;
 
-    public byte[] LastReceivedUDPPacket = new byte[0];
+    public byte[] LastReceivedUdpPacket = new byte[0];
     public DateTime LastReceivedPacketTimestamp;
 
-    public int QueuedPacketsCount { get; private set; }
+    public int QueuedPacketsCount {
+        get
+        {
+            return _queueOfReceivedUDPpackets.Count;
+        }
+    }
     private readonly Queue<byte[]> _queueOfReceivedUDPpackets = new Queue<byte[]>();
 
 
@@ -37,13 +42,13 @@ public class UdpReceiver
     private Thread _receiveThread;
 
     //Since receiving is running in a separte thread at maximum speed, incomming messages are queued up, so they can be analyzed in the main update loop.
-    public UdpReceiver(int localPort, UDPReceiveMode mode)
+    public UdpReceiver(int localPort, UdpReceiveMode mode)
     {     
         Port = localPort; 
         Mode = mode;
-        QueuedPacketsCount = -1;
 
-        Debug.Log($"Listening on UDP port: {Port} with {nameof(UDPReceiveMode)} {Mode}");
+
+        Debug.Log($"Listening on UDP port: {Port} with {nameof(UdpReceiveMode)} {Mode}");
 
         ReceiveThreadIsRunning = true;
         _receiveThread = new Thread(new ThreadStart(ReceiveData));
@@ -63,20 +68,19 @@ public class UdpReceiver
                 byte[] data = _client.Receive(ref anyIP);
                 if (data.Length > 0)
                 {
-                    LastReceivedUDPPacket = data.ToArray();      
+                    LastReceivedUdpPacket = data.ToArray();      
 
                     LastReceivedPacketTimestamp = DateTime.Now;
 
-                    ReceivedNewData.Invoke(LastReceivedUDPPacket);
+                    ReceivedNewData.Invoke(LastReceivedUdpPacket);
 
                     //Debug.Log("ReceivedUDP Data >> " + lastReceivedUDPPacket + " with timestamp: " + timestamp);
 
-                    if (Mode == UDPReceiveMode.Queue)
+                    if (Mode == UdpReceiveMode.Queue)
                     {
                         lock (_queueOfReceivedUDPpackets)
                         {
-                            _queueOfReceivedUDPpackets.Enqueue(LastReceivedUDPPacket);
-                            QueuedPacketsCount = _queueOfReceivedUDPpackets.Count;
+                            _queueOfReceivedUDPpackets.Enqueue(LastReceivedUdpPacket);
                         }
                     }
                 }
