@@ -38,10 +38,12 @@ When receive mode is set to Queue, in the Update loop it can be used as follows:
     void Update()
     {
         if (_udpReceiver2.QueuedPacketsCount > 0)
+        {
             Debug.Log(System.Text.Encoding.UTF8.GetString(_udpReceiver2.LastReceivedUdpPacket));
- 
-        Queue<byte[]> myPacketList = receiver2.GetQueuedUDPPackets();
-        Debug.Log(myPacketList.Count);     
+            Debug.Log(myPacketList.Count); //should be greater than 0
+            Queue<byte[]> myPacketList = receiver2.GetQueuedUDPPackets();
+            Debug.Log(myPacketList.Count); //should be 0
+        }
     }
 ```
 It's important to close the ports.
