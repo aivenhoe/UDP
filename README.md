@@ -37,7 +37,7 @@ When receive mode is set to Queue, in the Update loop it can be used as follows:
 ```csharp
     void Update()
     {
-        if (_udpReceiver2.LastReceivedUdpPacket > 0)
+        if (_udpReceiver2.QueuedPacketsCount > 0)
             Debug.Log(System.Text.Encoding.UTF8.GetString(_udpReceiver2.LastReceivedUdpPacket));
  
         Queue<byte[]> myPacketList = receiver2.GetQueuedUDPPackets();
